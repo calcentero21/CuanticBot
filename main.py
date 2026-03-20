@@ -1,23 +1,6 @@
 import os
 import subprocess
 
-# ── DEBUG: mostrar PATH y buscar node ──────────────────────
-print("=== DEBUG PATH ===")
-print(os.environ.get("PATH", ""))
-try:
-    r = subprocess.run(["which", "node"], capture_output=True, text=True)
-    print("node en:", r.stdout.strip() or "NO ENCONTRADO")
-    r2 = subprocess.run(["node", "--version"], capture_output=True, text=True)
-    print("node version:", r2.stdout.strip() or r2.stderr.strip())
-except Exception as e:
-    print("node error:", e)
-
-import glob
-hits = glob.glob("/opt/render/project/src/node_runtime/bin/node*")
-print("node_runtime/bin:", hits or "VACÍO")
-print("=== FIN DEBUG ===")
-# ────────────────────────────────────────────────────────────
-
 import re
 import tempfile
 import threading
@@ -31,8 +14,14 @@ import imageio_ffmpeg
 # Añadir ffmpeg al PATH
 os.environ["PATH"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe()) + os.pathsep + os.environ.get("PATH", "")
 
-# Añadir Node.js al PATH (instalado en la carpeta del proyecto)
-os.environ["PATH"] = os.path.join(os.getcwd(), "node_runtime", "bin") + ":" + os.environ.get("PATH", "")
+# Encontrar Node.js — Render lo instala en /opt/render/project/nodes/
+import glob as _glob
+_node_dirs = _glob.glob("/opt/render/project/nodes/*/bin")
+if _node_dirs:
+    os.environ["PATH"] = _node_dirs[0] + ":" + os.environ.get("PATH", "")
+    print(f"✅ Node.js encontrado en: {_node_dirs[0]}")
+else:
+    print("⚠️  Node.js no encontrado en /opt/render/project/nodes/")
 
 # --- CREDENCIALES (desde variables de entorno) ---
 BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
