@@ -24,12 +24,12 @@ if _node_dirs:
 
     # Instalar yt-dlp-js-runners si no está instalado (necesario para resolver firmas de YouTube)
     _node_modules = os.path.join(os.path.dirname(_node_bin), "lib", "node_modules")
-    _runner_path = os.path.join(_node_modules, "yt-dlp-js-runners")
+    _runner_path = os.path.join(_node_modules, "@yt-dlp")
     if not os.path.exists(_runner_path):
         print("📦 Instalando yt-dlp-js-runners...")
         _npm = os.path.join(_node_bin, "npm")
         result = subprocess.run(
-            [_npm, "install", "-g", "yt-dlp-js-runners"],
+            [_npm, "install", "-g", "@yt-dlp/cdn-nodes"],
             capture_output=True, text=True
         )
         if result.returncode == 0:
