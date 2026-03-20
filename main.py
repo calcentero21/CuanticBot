@@ -13,7 +13,7 @@ import imageio_ffmpeg
 os.environ["PATH"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe()) + os.pathsep + os.environ.get("PATH", "")
 
 # Añadir Node.js al PATH (instalado por build.sh en /opt/node/bin)
-os.environ["PATH"] = "/opt/node/bin:" + os.environ.get("PATH", "")
+os.environ["PATH"] = os.path.join(os.getcwd(), "node_runtime", "bin") + ":" + os.environ.get("PATH", "")
 
 # --- CREDENCIALES (desde variables de entorno) ---
 BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
