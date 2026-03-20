@@ -463,30 +463,115 @@ def handle_playlist_submission(ack, body, client, view, logger):
 
 
 
+
 if __name__ == "__main__":
+    import urllib.parse
     from http.server import HTTPServer, BaseHTTPRequestHandler
 
-    class HealthHandler(BaseHTTPRequestHandler):
+    UPLOAD_PASSWORD = os.environ.get("UPLOAD_PASSWORD", "")
+    COOKIES_PATH_WRITABLE = "/opt/render/project/src/cookies_netscape.txt"
+
+    class Handler(BaseHTTPRequestHandler):
+
         def do_GET(self):
-            self.send_response(200)
+            if self.path == "/":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"OK - Bot is running")
+
+            elif self.path == "/upload":
+                # Formulario HTML para subir cookies
+                html = """<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Subir Cookies</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 60px auto; padding: 0 20px; }
+        textarea { width: 100%; height: 300px; font-family: monospace; font-size: 12px; }
+        input[type=password], input[type=submit] { margin-top: 10px; padding: 8px 16px; }
+        input[type=submit] { background: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h2>🍪 Subir cookies_netscape.txt</h2>
+    <form method="POST" action="/upload">
+        <label>Contraseña:</label><br>
+        <input type="password" name="password" required><br><br>
+        <label>Contenido del archivo cookies_netscape.txt:</label><br>
+        <textarea name="cookies" placeholder="# Netscape HTTP Cookie File&#10;..." required></textarea><br>
+        <input type="submit" value="Subir cookies">
+    </form>
+</body>
+</html>"""
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(html.encode())
+
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+        def do_POST(self):
+            if self.path == "/upload":
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length).decode("utf-8")
+                params = urllib.parse.parse_qs(body)
+
+                password = params.get("password", [""])[0]
+                cookies_content = params.get("cookies", [""])[0]
+
+                if not UPLOAD_PASSWORD:
+                    self._respond(500, "❌ Variable UPLOAD_PASSWORD no configurada en Render.")
+                    return
+
+                if password != UPLOAD_PASSWORD:
+                    self._respond(403, "❌ Contraseña incorrecta.")
+                    return
+
+                if not cookies_content.strip():
+                    self._respond(400, "❌ El contenido está vacío.")
+                    return
+
+                try:
+                    with open(COOKIES_PATH_WRITABLE, "w") as f:
+                        f.write(cookies_content)
+
+                    # Actualizar variable global
+                    global COOKIES_VALID, COOKIES_PATH
+                    COOKIES_VALID = True
+                    COOKIES_PATH = COOKIES_PATH_WRITABLE
+
+                    self._respond(200, "✅ Cookies guardadas correctamente. El bot las usará desde ahora.")
+                    print("[COOKIES] ✅ Cookies actualizadas via /upload")
+                except Exception as e:
+                    self._respond(500, f"❌ Error guardando archivo: {e}")
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+        def _respond(self, code, message):
+            self.send_response(code)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
             self.end_headers()
-            self.wfile.write(b"OK")
+            self.wfile.write(message.encode())
+
         def log_message(self, *args):
-            pass  # Silenciar logs del servidor HTTP
+            pass
 
     port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+    server = HTTPServer(("0.0.0.0", port), Handler)
 
     print("\n" + "=" * 60)
     print("⚡ Slack YouTube Bot — Iniciando en Render")
     print("=" * 60)
     print(f"✅ Cookies: {'Sí' if COOKIES_VALID else 'No (descargas públicas solamente)'}")
-    print(f"🌐 Health check en puerto {port}")
+    print(f"🌐 Servidor HTTP en puerto {port}")
+    print(f"🍪 Subir cookies: /upload")
     print("🚀 Bot en Socket Mode...\n")
 
-    # Servidor HTTP en hilo separado (para que Render no cierre el servicio)
     threading.Thread(target=server.serve_forever, daemon=True).start()
 
-    # Bot de Slack (bloquea el hilo principal)
     handler = SocketModeHandler(app, APP_TOKEN)
     handler.start()
