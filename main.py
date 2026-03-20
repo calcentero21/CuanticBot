@@ -9,8 +9,11 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from yt_dlp import YoutubeDL
 import imageio_ffmpeg
 
-# Usar el ffmpeg incluido en imageio-ffmpeg (no requiere instalación del sistema)
+# Añadir ffmpeg al PATH
 os.environ["PATH"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe()) + os.pathsep + os.environ.get("PATH", "")
+
+# Añadir Node.js al PATH (instalado por build.sh en /opt/node/bin)
+os.environ["PATH"] = "/opt/node/bin:" + os.environ.get("PATH", "")
 
 # --- CREDENCIALES (desde variables de entorno) ---
 BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
@@ -41,13 +44,6 @@ def get_ydl_opts_base():
         "extractor_args": {
             "youtube": ["skip=hls/dash", "lang=es"]
         },
-        'extractor_args': {
-    'youtube': [
-        'skip=hls/dash',
-        'lang=es',
-        'player_client=android,web'  # ← esto evita necesitar JS runtime
-    ]
-},
         "http_headers": {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
