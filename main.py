@@ -18,8 +18,26 @@ os.environ["PATH"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe()) + os.paths
 import glob as _glob
 _node_dirs = _glob.glob("/opt/render/project/nodes/*/bin")
 if _node_dirs:
-    os.environ["PATH"] = _node_dirs[0] + ":" + os.environ.get("PATH", "")
-    print(f"✅ Node.js encontrado en: {_node_dirs[0]}")
+    _node_bin = _node_dirs[0]
+    os.environ["PATH"] = _node_bin + ":" + os.environ.get("PATH", "")
+    print(f"✅ Node.js encontrado en: {_node_bin}")
+
+    # Instalar yt-dlp-js-runners si no está instalado (necesario para resolver firmas de YouTube)
+    _node_modules = os.path.join(os.path.dirname(_node_bin), "lib", "node_modules")
+    _runner_path = os.path.join(_node_modules, "yt-dlp-js-runners")
+    if not os.path.exists(_runner_path):
+        print("📦 Instalando yt-dlp-js-runners...")
+        _npm = os.path.join(_node_bin, "npm")
+        result = subprocess.run(
+            [_npm, "install", "-g", "yt-dlp-js-runners"],
+            capture_output=True, text=True
+        )
+        if result.returncode == 0:
+            print("✅ yt-dlp-js-runners instalado")
+        else:
+            print(f"⚠️  Error instalando yt-dlp-js-runners: {result.stderr[:200]}")
+    else:
+        print("✅ yt-dlp-js-runners ya instalado")
 else:
     print("⚠️  Node.js no encontrado en /opt/render/project/nodes/")
 
