@@ -462,11 +462,31 @@ def handle_playlist_submission(ack, body, client, view, logger):
     threading.Thread(target=_process_modal, args=(view, body, client, logger, True), daemon=True).start()
 
 
+
 if __name__ == "__main__":
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+
+    class HealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+        def log_message(self, *args):
+            pass  # Silenciar logs del servidor HTTP
+
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+
     print("\n" + "=" * 60)
     print("⚡ Slack YouTube Bot — Iniciando en Render")
     print("=" * 60)
     print(f"✅ Cookies: {'Sí' if COOKIES_VALID else 'No (descargas públicas solamente)'}")
+    print(f"🌐 Health check en puerto {port}")
     print("🚀 Bot en Socket Mode...\n")
+
+    # Servidor HTTP en hilo separado (para que Render no cierre el servicio)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+
+    # Bot de Slack (bloquea el hilo principal)
     handler = SocketModeHandler(app, APP_TOKEN)
     handler.start()
