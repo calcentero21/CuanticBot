@@ -7,6 +7,10 @@ import subprocess
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from yt_dlp import YoutubeDL
+import imageio_ffmpeg
+
+# Usar el ffmpeg incluido en imageio-ffmpeg (no requiere instalación del sistema)
+os.environ["PATH"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe()) + os.pathsep + os.environ.get("PATH", "")
 
 # --- CREDENCIALES (desde variables de entorno) ---
 BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
