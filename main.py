@@ -41,6 +41,13 @@ def get_ydl_opts_base():
         "extractor_args": {
             "youtube": ["skip=hls/dash", "lang=es"]
         },
+        'extractor_args': {
+    'youtube': [
+        'skip=hls/dash',
+        'lang=es',
+        'player_client=android,web'  # ← esto evita necesitar JS runtime
+    ]
+},
         "http_headers": {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
