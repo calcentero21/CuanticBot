@@ -94,7 +94,7 @@ HTML_TEMPLATE = """
 <body class="{{ 'paid' if paid else '' }}">
 
 <div class="card">
-    <h1>💸 NO AUN NO PAGAN 💸</h1>
+    <h1>💸 ESTADO 💸</h1>
 
     {% if paid %}
         <div class="paid-text">✔ YA PAGARON</div>
