@@ -5,7 +5,7 @@ import pytz
 app = Flask(__name__)
 
 # Configuración de zona horaria (Santo Domingo)
-tz = pytz.timezone('America/Santo Domingo')
+tz = pytz.timezone('America/Santo_Domingo')
 
 # Estado inicial: 23 del mes pasado a las 9:00 AM
 # Nota: Ajustamos dinámicamente al mes anterior según la fecha actual
