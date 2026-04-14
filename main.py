@@ -72,14 +72,15 @@ def prepare():
 
     # 🔥 comando robusto
     cmd = [
-        'yt-dlp',
-        '-f', 'bv*+ba/b',
-        '-g',
-        '--no-check-certificates',
-        '--geo-bypass',
-        '--add-header', 'User-Agent:Mozilla/5.0',
-        url
-    ]
+    'yt-dlp',
+    '-f', 'bv*+ba/b',
+    '-g',
+    '--no-check-certificates',
+    '--geo-bypass',
+    '--add-header', 'User-Agent:Mozilla/5.0',
+    '--js-runtimes', 'node',
+    url
+]
 
     p = subprocess.run(cmd, capture_output=True, text=True)
 
