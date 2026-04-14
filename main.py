@@ -11,24 +11,18 @@ HTML_TEMPLATE = '''
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Proxy HD Estable</title>
-<style>
-body { background:#000; color:#fff; text-align:center; font-family:sans-serif; }
-input { width:60%; padding:10px; }
-button { padding:10px 20px; }
-video { width:90%; margin-top:20px; }
-</style>
+<title>Proxy Stream</title>
 </head>
-<body>
+<body style="background:#000;color:#fff;text-align:center;font-family:sans-serif;">
 
 <h2>🎬 STREAM PROXY</h2>
 
-<input id="url" placeholder="Pega URL de YouTube">
+<input id="url" placeholder="Pega URL de YouTube" style="width:60%;padding:10px;">
 <button onclick="go()">PLAY</button>
 
 <p id="status">Esperando...</p>
 
-<video id="v" controls autoplay></video>
+<video id="v" controls autoplay style="width:90%;margin-top:20px;"></video>
 
 <script>
 function go(){
@@ -38,7 +32,7 @@ function go(){
 
     if(!url) return;
 
-    status.innerText = "Preparando stream...";
+    status.innerText = "Preparando...";
 
     fetch('/prepare',{
         method:'POST',
@@ -76,14 +70,28 @@ def prepare():
 
     stream_id = str(uuid.uuid4())
 
-    cmd = ['yt-dlp', '-f', 'best[ext=mp4]', '-g', url]
+    # 🔥 comando robusto
+    cmd = [
+        'yt-dlp',
+        '-f', 'bv*+ba/b',
+        '-g',
+        '--no-check-certificates',
+        '--geo-bypass',
+        '--add-header', 'User-Agent:Mozilla/5.0',
+        url
+    ]
+
     p = subprocess.run(cmd, capture_output=True, text=True)
 
     if p.returncode == 0:
         streams[stream_id] = p.stdout.strip().split('\n')[0]
         return jsonify({"success": True, "id": stream_id})
 
-    return jsonify({"success": False, "error": "No se pudo obtener fuente"})
+    # 🔥 ahora verás el error real
+    return jsonify({
+        "success": False,
+        "error": p.stderr[:300]
+    })
 
 
 @app.route('/stream/<stream_id>')
