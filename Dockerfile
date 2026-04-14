@@ -1,6 +1,9 @@
 FROM python:3.11
 
-RUN apt-get update && apt-get install -y ffmpeg
+# 🔥 Instalar ffmpeg + nodejs
+RUN apt-get update && \
+    apt-get install -y ffmpeg nodejs npm && \
+    apt-get clean
 
 WORKDIR /app
 COPY . .
